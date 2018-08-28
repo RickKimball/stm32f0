@@ -20,10 +20,11 @@ OBJCOPY=arm-none-eabi-objcopy
 OBJDUMP=arm-none-eabi-objdump
 
 F_CPU ?= 24000000
+STACK ?= 0x20002000
 DEFS=-DF_CPU=$(F_CPU)
 ASFLAGS=-g -Os $(DEFS)
 CFLAGS=-g -Os $(DEFS)
-LDFLAGS=-g -T $(LDSCRIPT) -Wl,-Map=$(MAP) -nostartfiles -specs=nano.specs
+LDFLAGS=-g -T $(LDSCRIPT) -Wl,-Map=$(MAP) -nostartfiles -specs=nano.specs -Wl,--defsym=_stack=$(STACK)
 LDLIBS=
 TARGET_MACH=-mcpu=cortex-m0 -mthumb
 TARGET_ARCH=-mcpu=cortex-m0 -mthumb

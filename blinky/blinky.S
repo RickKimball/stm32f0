@@ -46,7 +46,7 @@ millis:                 // milliseconds since reset
     .type Reset_Handler,%function
 Reset_Handler:
     //--- establish a good stack pointer
-    ldr r0,=_stack_top
+    ldr r0,=_stack
     mov sp,r0
 
     bl SystemInit
@@ -72,7 +72,6 @@ main:
 
     ldr r7,=LED_PORT                @ GPIOA
     ldr r6,=LED_PIN                 @ GPIO_PIN_5
-    ldr r5,=SysTick
 
 loop:
     //--- turn LED on
@@ -96,6 +95,7 @@ loop:
 SystemInit:
 
 .if F_CPU > 8000000
+
     .if F_CPU > 24000000
         //--- set FLASH to 1ws & prefetch
         write_reg FLASH+ACR, FLASH_ACR_LATENCY+FLASH_ACR_PRFTBE
@@ -135,6 +135,7 @@ SystemInit:
     .endif
 
 #define USE_MACROS 0
+
     //--- turn on PLL
 #if USE_MACROS
     set_bit RCC+CR_RCC, RCC_CR_PLLON
@@ -227,10 +228,10 @@ SysTick_Config:
  */
     .type SysTick_Handler, %function
 SysTick_Handler:
-    ldr r0,=millis
-    ldr r1,[r0]
-    adds r1,#1
-    str r1,[r0]
+    ldr r1,=millis
+    ldr r0,[r1]
+    adds r0,#1
+    str r0,[r1]
     bx lr
 
 /*--------------------------------------------------------------------*/
@@ -244,7 +245,7 @@ pc_offset_constants:
     .section .isr_vector,"a",%progbits
     .type _vector_table, %object
 _vector_table:
-    .word  _stack_top
+    .word  _stack
     .word  Reset_Handler
     .word  NMI_Handler                      //--- FAULT HANDLERS
     .word  HardFault_Handler

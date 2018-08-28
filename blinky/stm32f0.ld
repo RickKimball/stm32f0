@@ -1,7 +1,5 @@
 ENTRY(Reset_Handler)
-_estack = 0x20002000;
-_stack_top = _estack;
-PROVIDE( __stack = _estack );
+PROVIDE( __stack = 0x20002000 );
 
 MEMORY
 {
@@ -16,16 +14,13 @@ SECTIONS
     . = ALIGN(4);
   } >flash
 
-  /* */
   .text : {
   } >flash
 
-  /* */
   . = ORIGIN(ram);
   .data : {
   } >ram
 
-  /* */
   . =  ALIGN(4);
   .bss : {
   _sbss = .;
@@ -37,5 +32,4 @@ SECTIONS
   end = .;
   _end = end;
 
-  /* */
 }
