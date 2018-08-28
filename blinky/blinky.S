@@ -215,12 +215,15 @@ SysTick_Config:
     subs r0,#1
     ldr r1,=SysTick
     str r0,[r1,LOAD]
+
     movs r0,#0
     str r0,[r1,VAL]
-    ldr r0,=SysTick_CTRL_CLKSOURCE_Msk+ \
+
+    movs r0,SysTick_CTRL_CLKSOURCE_Msk+ \
             SysTick_CTRL_TICKINT_Msk+ \
             SysTick_CTRL_ENABLE_Msk
     str r0,[r1,CTRL]
+
     bx lr
 
 /*--------------------------------------------------------------------
