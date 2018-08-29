@@ -14,30 +14,10 @@
 #include "stm32f0.inc"
 #include "macros.inc"
 
-#if 1
-    // these reduce the size of the symbol table while still simple names
-    #define LED_PORT GPIOA
-    #define LED_PIN  GPIO_BSRR_BS_5
-    #define LED_Hz 5
-    #define DELAY_CYCLES (F_CPU/LED_Hz/2)
-#else
-    // you uses these .equiv, to have access to the symbols in gdb
-    .equiv LED_PORT,GPIOA
-    .equiv LED_PIN,GPIO_BSRR_BS_5
-    .equiv LED_Hz,5
-    .equiv DELAY_CYCLES,F_CPU/LED_Hz/2
-#endif
-
-/*--------------------------------------------------------------------*/
-/*-- DATA Section                                                     */
-    .data
-
-/*--------------------------------------------------------------------*/
-
-/*-- BSS Section                                                      */
-    .bss
-millis:                 // milliseconds since reset
-    .word 0
+#define LED_PORT GPIOA
+#define LED_PIN  GPIO_BSRR_BS_5
+#define LED_Hz 5
+#define DELAY_CYCLES (F_CPU/LED_Hz/2)
 
 /*--------------------------------------------------------------------*/
 /*-- TEXT Section                                                     */
@@ -50,11 +30,6 @@ Reset_Handler:
     mov sp,r0
 
     bl SystemInit
-
-    //--- setup systick timer
-    write_32 millis, 0
-    ldr r0,=F_CPU/1000
-    bl SysTick_Config
 
     bl main                 // Note: main never actually returns
 
@@ -78,14 +53,13 @@ loop:
     str  r6, [r7, BSRR]
 
     // use cycle counting delay of 50 msec
-    delay_cycles ((F_CPU/1000)*50)
+    delay_cycles DELAY_CYCLES
 
     //--- turn LED off
     str  r6, [r7, BRR]
 
-    // use SysTick counting delay of 450 msec
-    ldr r0,=450
-    bl delay_ms
+    // use cycle counting delay of 50 msec
+    delay_cycles DELAY_CYCLES
 
     b   loop
 
@@ -189,54 +163,6 @@ SystemInit:
 
     bx lr
 
-/*--------------------------------------------------------------------
- * delay_ms - using SysTick to run a timer
- *
- * r0 - delay in msec
- */
-    .type delay_ms, %function
-delay_ms:
-    ldr r1,=millis                  // load millis addr
-    ldr r2,[r1]                     // starting tick_cnt
-1:
-    ldr r3,[r1]                     // current tick_cnt
-    subs r3,r3,r2                   // diff
-    cmp r3,r0                       // diff < msec
-    wfe                             // wait for a change
-    bcc 1b                          // keep looping
-2:
-    bx lr
-
-/*--------------------------------------------------------------------
- * SysTick_Config( r0=ticks )
- */
-    .type SysTick_Config, %function
-SysTick_Config:
-    subs r0,#1
-    ldr r1,=SysTick
-    str r0,[r1,LOAD]
-
-    movs r0,#0
-    str r0,[r1,VAL]
-
-    movs r0,SysTick_CTRL_CLKSOURCE_Msk+ \
-            SysTick_CTRL_TICKINT_Msk+ \
-            SysTick_CTRL_ENABLE_Msk
-    str r0,[r1,CTRL]
-
-    bx lr
-
-/*--------------------------------------------------------------------
- * SysTick_Handler
- */
-    .type SysTick_Handler, %function
-SysTick_Handler:
-    ldr r1,=millis
-    ldr r0,[r1]
-    adds r0,#1
-    str r0,[r1]
-    bx lr
-
 /*--------------------------------------------------------------------*/
     .type pc_offset_constants, %object
 pc_offset_constants:
@@ -319,10 +245,8 @@ _vector_table:
     .weak      PendSV_Handler
     .thumb_set PendSV_Handler,Default_Handler
 
-#if 0
     .weak      SysTick_Handler
     .thumb_set SysTick_Handler,Default_Handler
-#endif
 
     .weak      WWDG_IRQHandler
     .thumb_set WWDG_IRQHandler,Default_Handler
