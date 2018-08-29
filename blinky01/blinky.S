@@ -52,13 +52,13 @@ loop:
     //--- turn LED on
     str  r6, [r7, BSRR]
 
-    // use cycle counting delay of 50 msec
+    // use cycle counting delay
     delay_cycles DELAY_CYCLES
 
     //--- turn LED off
     str  r6, [r7, BRR]
 
-    // use cycle counting delay of 50 msec
+    // use cycle counting delay
     delay_cycles DELAY_CYCLES
 
     b   loop
